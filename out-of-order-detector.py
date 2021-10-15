@@ -1,8 +1,6 @@
-import re
 import os
 import pyshark
 from subprocess import call
-from multiprocessing import Process
 from tqdm import tqdm
 
 ports, repeatedExists, prev_seq, isOutOfOrder, newOrderStarter, analyzedPackets, affectedPackets, affectedRanges = [], False, None, False, False, [], [], []
