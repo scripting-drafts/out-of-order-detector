@@ -4,15 +4,15 @@ from subprocess import call
 from tqdm import tqdm
 
 ports, repeatedExists, prev_seq, isOutOfOrder, newOrderStarter, analyzedPackets, affectedPackets, affectedRanges = [], False, None, False, False, [], [], []
-capture_file = "2021_10-06-11-20"
+capture_file = "2021_10-06-11-20.pcap"
 
-if not os.path.exists('original_pcaps'):
-    os.makedirs('original_pcaps')
+# if not os.path.exists('original_pcaps'):
+#     os.makedirs('original_pcaps')
 
-if not os.path.exists(capture_file + "-fixed.pcap"):
-    fix_cut_packet = call(["python", "pcap-fix.py", "--in", capture_file + ".pcap", "--pcapfix", "--pcapfix_dir", "original_pcaps", "--debug"])
+if not os.path.exists("fixed_" + capture_file):
+    fix_cut_packet = call(["pcapfix", capture_file])
 
-cap = pyshark.FileCapture(capture_file + "-fixed.pcap", display_filter='udp')
+cap = pyshark.FileCapture("fixed_" + capture_file, display_filter='udp')
 
 print("Reading ports")
 ports = [p[p.transport_layer].dstport for p in tqdm(cap) if p[p.transport_layer].dstport != "53"]
@@ -27,11 +27,11 @@ if repeatedExists:
 
 print("Analyzing traces...")
 for port in tqdm(ports):
-    rtp_cap = pyshark.FileCapture(capture_file + "-fixed.pcap", display_filter='rtp', decode_as={'udp.port==' + port: 'rtp'})
+    rtp_cap = pyshark.FileCapture("fixed_" + capture_file, display_filter='rtp', decode_as={'udp.port==' + port: 'rtp'})
     # rtp_cap.set_debug()
     for rtp_packet in rtp_cap:
         length = rtp_packet.length
-        if length == "85":
+        if length == "85" or length == "73":
             seq = int(rtp_packet.rtp.seq)
             ssrc = rtp_packet.rtp.ssrc
 
